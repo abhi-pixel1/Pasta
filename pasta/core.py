@@ -55,12 +55,12 @@ def merge_pdfs_from_folder(directory, output_file_name="merged_output.pdf", is_t
             title_page = create_title_page(pdf_file, page_size)
             with open(title_page, "rb") as temp_pdf:
                 merger.append(PdfReader(temp_pdf))
+            
+            # Remove the temporary title page
+            os.remove(title_page)
 
         # Add the current PDF to the merger
         merger.append(pdf_path)
-
-        # Remove the temporary title page
-        os.remove(title_page)
 
     # Save the merged PDF back to the same directory
     if not output_file_path:
