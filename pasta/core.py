@@ -1,6 +1,6 @@
 import os
 import re
-from PyPDF2 import PdfMerger, PdfReader
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
@@ -40,6 +40,7 @@ def merge_pdfs_from_folder(directory, output_file_name="merged_output.pdf", is_t
         raise Exception(f"No PDF files found in the directory: {os.path.abspath(directory)}. Please ensure the directory contains at least one PDF file to merge.")
 
     merger = PdfMerger()
+    page_offset = 0  # Track the starting page of each PDF
 
     for pdf_file in pdf_files:
         pdf_path = os.path.join(directory, pdf_file)
@@ -56,11 +57,18 @@ def merge_pdfs_from_folder(directory, output_file_name="merged_output.pdf", is_t
             with open(title_page, "rb") as temp_pdf:
                 merger.append(PdfReader(temp_pdf))
             
+            page_offset += 1  # Since we added a title page, increment page count
+
             # Remove the temporary title page
             os.remove(title_page)
 
         # Add the current PDF to the merger
         merger.append(pdf_path)
+        merger.add_outline_item(title=pdf_file, page_number=page_offset)
+
+        # Update page offset after adding this file
+        reader = PdfReader(pdf_path)
+        page_offset += len(reader.pages)  # Increment based on actual pages
 
     # Save the merged PDF back to the same directory
     if not output_file_path:
